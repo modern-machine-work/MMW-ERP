@@ -186,7 +186,7 @@ async function initDashboardPage() {
         const barWidth = ((values[i] || 0) / max) * 500;
         return `
           <text x="12" y="${y + 15}" class="axis-label">${escapeHtml(label)}</text>
-          <rect class="hbar" x="150" y="${y}" width="${Math.max(3, barWidth)}" height="20" rx="5" data-tip="${escapeHtml(label)}: ${escapeHtml(formatter(values[i] || 0))}"></rect>
+          <rect class="hbar" x="70" y="${y}" width="${Math.max(3, barWidth)}" height="20" rx="5" data-tip="${escapeHtml(label)}: ${escapeHtml(formatter(values[i] || 0))}"></rect>
           <text x="${160 + barWidth}" y="${y + 15}" class="value-label">${escapeHtml(formatter(values[i] || 0))}</text>
         `;
       }).join('')}
