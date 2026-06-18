@@ -10,6 +10,7 @@ function isAuthenticated() {
 async function login(username, password) {
   const response = await apiPost('login', { username, password });
   if (response.authenticated) {
+    sessionExpiredHandled = false;
     localStorage.setItem(AUTH_KEY, 'true');
     localStorage.setItem('mmwUser', response.username || username);
     localStorage.setItem('mmwToken', response.token || '');
@@ -19,9 +20,7 @@ async function login(username, password) {
 }
 
 function logout() {
-  localStorage.removeItem(AUTH_KEY);
-  localStorage.removeItem('mmwUser');
-  localStorage.removeItem('mmwToken');
+  clearAuthState();
   window.location.hash = 'login';
 }
 
