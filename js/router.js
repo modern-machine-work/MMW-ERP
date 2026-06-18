@@ -56,6 +56,10 @@ async function navigateTo(routeName = getCurrentRoute()) {
 
   showLoader();
   try {
+    if (!route.public && getAuthToken()) {
+      await apiGet('validateSession');
+    }
+
     const target = route.public ? document.getElementById('authContent') : document.getElementById('pageContent');
     target.innerHTML = await loadHtml(route.page);
     const isPublicRoute = Boolean(route.public);
@@ -69,7 +73,9 @@ async function navigateTo(routeName = getCurrentRoute()) {
       await window[route.init]();
     }
   } catch (error) {
-    alert(error.message);
+    if (!error.isAuthError) {
+      alert(error.message);
+    }
   } finally {
     hideLoader();
   }
