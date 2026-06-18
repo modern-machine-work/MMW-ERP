@@ -20,6 +20,7 @@ async function initInvoicesPage() {
       { name: 'DueDate', label: 'Due Date', type: 'date' },
       { name: 'PaymentStatus', label: 'Payment Status', type: 'select', options: ['Unpaid', 'Partial', 'Paid', 'Overdue'], defaultValue: 'Unpaid' },
       { name: 'PaymentDate', label: 'Payment Date', type: 'date' },
+      { name: 'IncludeInReports', label: 'Include In Reports', type: 'select', options: ['Yes', 'No'], defaultValue: 'Yes' },
     ],
   });
 }
