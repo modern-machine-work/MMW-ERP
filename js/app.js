@@ -94,6 +94,36 @@ function formatDateStamp() {
   return `${year}-${month}-${day}`;
 }
 
+function parseDateValue(value) {
+  const text = String(value || '').slice(0, 10);
+  let match = text.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (match) return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+  match = text.match(/^(\d{2})[/-](\d{2})[/-](\d{4})$/);
+  if (match) return new Date(Number(match[3]), Number(match[2]) - 1, Number(match[1]));
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatDateDisplay(value) {
+  const date = parseDateValue(value);
+  if (!date) return value || '';
+  return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+}
+
+function newestFirstRows(rows, config) {
+  const dateField = config.sortField || config.monthField || config.fields.find((field) => field.type === 'date')?.name;
+  return [...rows].sort((a, b) => {
+    const dateA = dateField ? parseDateValue(a[dateField]) : null;
+    const dateB = dateField ? parseDateValue(b[dateField]) : null;
+    if (dateA && dateB && dateA.getTime() !== dateB.getTime()) return dateB - dateA;
+    if (dateA && !dateB) return -1;
+    if (!dateA && dateB) return 1;
+    const idA = String(a[config.idField] || '');
+    const idB = String(b[config.idField] || '');
+    return idB.localeCompare(idA, undefined, { numeric: true, sensitivity: 'base' });
+  });
+}
+
 function financialYearFromDate(value) {
   const dateText = String(value || '').slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateText)) return '';
@@ -142,11 +172,13 @@ function tableRowsToCsv(fields, rows) {
 }
 
 function exportRowsToCsv(config, rows) {
-  const content = tableRowsToCsv(config.fields, rows);
+  const exportRows = config.sheet === 'Invoices' ? rows.filter((row) => String(row.IncludeInReports || 'Yes') !== 'No') : rows;
+  const content = tableRowsToCsv(config.fields, exportRows);
   downloadBlob(`${safeFileName(config.sheet)}-${formatDateStamp()}.csv`, 'text/csv;charset=utf-8', content);
 }
 
 function exportRowsToExcel(config, rows) {
+  rows = config.sheet === 'Invoices' ? rows.filter((row) => String(row.IncludeInReports || 'Yes') !== 'No') : rows;
   const visibleFields = config.fields;
   const headerCells = visibleFields.map((field) => `<th>${escapeHtml(field.label)}</th>`).join('');
   const bodyRows = rows.map((row) => `
@@ -177,6 +209,7 @@ function exportRowsToExcel(config, rows) {
 }
 
 function printRowsAsPdf(config, rows) {
+  rows = config.sheet === 'Invoices' ? rows.filter((row) => String(row.IncludeInReports || 'Yes') !== 'No') : rows;
   const printWindow = window.open('', '_blank');
   if (!printWindow) {
     alert('Please allow popups to export PDF.');
@@ -338,6 +371,9 @@ function formatDisplayValue(field, value, row) {
   }
   if (field.displayAs === 'time') {
     return formatTimeDisplay(value);
+  }
+  if (field.type === 'date' || field.displayAs === 'date') {
+    return formatDateDisplay(value);
   }
   if (field.displayAs === 'hours') {
     const hours = Number(value || 0) / 60;
@@ -547,6 +583,9 @@ function setupCrudModule(config) {
         ${visibleFields.map((field) => {
           const value = resolveDisplayValue(row, field);
           const displayValue = formatDisplayValue(field, value, row);
+          if (field.name === 'IncludeInReports' && String(value || 'Yes') === 'No') {
+            return '<td><span class="badge cancelled">Excluded</span></td>';
+          }
           if (field.name.toLowerCase().includes('status')) {
             return `<td><span class="badge ${normalizeStatus(value)}">${escapeHtml(value)}</span></td>`;
           }
@@ -593,7 +632,7 @@ function setupCrudModule(config) {
   async function loadRows() {
     try {
       const rows = await apiGet(`get${config.sheet}`);
-      state.rows = Array.isArray(rows) ? rows : [];
+      state.rows = newestFirstRows(Array.isArray(rows) ? rows : [], config);
       lookupCache[config.sheet] = state.rows;
     } catch (error) {
       alert(error.message);
