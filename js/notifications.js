@@ -19,17 +19,19 @@ async function initNotificationsPage() {
   }
 
   async function buildReminders() {
-    const [invoices, expenses, advances, salary, orders, dispatches] = await Promise.all([
+    const [invoices, expenses, advances, salary, orders, dispatches, vendorPayments, vendors] = await Promise.all([
       apiGet('getInvoices').catch(() => []),
       apiGet('getExpenses').catch(() => []),
       apiGet('getAdvances').catch(() => []),
       apiGet('getSalaryRegister').catch(() => []),
       apiGet('getOrders').catch(() => []),
       apiGet('getDispatch').catch(() => []),
+      apiGet('getVendorPayments').catch(() => []),
+      apiGet('getVendors').catch(() => []),
     ]);
 
     const list = [];
-    invoices.forEach((invoice) => {
+    invoices.filter((invoice) => String(invoice.IncludeInReports || 'Yes') !== 'No').forEach((invoice) => {
       if (!['paid', 'done'].includes(String(invoice.PaymentStatus || '').toLowerCase())) {
         addReminder(list, {
           type: 'Customer Payment',
@@ -39,6 +41,27 @@ async function initNotificationsPage() {
           note: `${invoice.ClientCode || ''} invoice payment pending`,
         });
       }
+    });
+
+    vendorPayments.forEach((payment) => {
+      if (String(payment.PaymentStatus || '').toLowerCase() === 'paid') return;
+      const vendor = vendors.find((item) => String(item.VendorID) === String(payment.VendorID));
+      const vendorName = vendor?.VendorName || payment.VendorID || 'Vendor';
+      const dueDate = parseDateValue(payment.DueDate);
+      const todayDate = parseDateValue(today);
+      const dayDiff = dueDate && todayDate ? Math.round((dueDate - todayDate) / 86400000) : null;
+      if (dayDiff !== null && ![7, 3, 0].includes(dayDiff) && dayDiff >= 0) return;
+      let note = `Payment of Rs. ${money(payment.AmountPaid)} to ${vendorName} is pending.`;
+      if (dayDiff === 7 || dayDiff === 3) note = `Payment of Rs. ${money(payment.AmountPaid)} to ${vendorName} is due in ${dayDiff} days.`;
+      if (dayDiff === 0) note = `Payment of Rs. ${money(payment.AmountPaid)} to ${vendorName} is due today.`;
+      if (dayDiff < 0) note = `Payment of Rs. ${money(payment.AmountPaid)} to ${vendorName} is overdue by ${Math.abs(dayDiff)} days.`;
+      addReminder(list, {
+        type: 'Vendor Payment',
+        reference: payment.ReferenceNo || payment.PaymentID,
+        dueDate: payment.DueDate,
+        amount: payment.AmountPaid,
+        note,
+      });
     });
 
     expenses.forEach((expense) => {
@@ -107,7 +130,7 @@ async function initNotificationsPage() {
       <tr>
         <td>${escapeHtml(item.type)}</td>
         <td>${escapeHtml(item.reference)}</td>
-        <td>${escapeHtml(item.dueDate || '')}</td>
+        <td>${escapeHtml(formatDateDisplay(item.dueDate) || '')}</td>
         <td>${item.amount ? `Rs. ${escapeHtml(money(item.amount))}` : ''}</td>
         <td>${escapeHtml(item.note || '')}</td>
         <td><span class="badge ${normalizeStatus(item.status)}">${escapeHtml(item.status)}</span></td>
