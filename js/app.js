@@ -1108,7 +1108,9 @@ function applyFormEnhancements(config, modalRoot) {
     const amount = getFormField(modalRoot, 'Amount');
     const recalcAmount = () => {
       const base = Number(qty?.value || 0) * Number(rate?.value || 0);
-      const total = base + Number(gst?.value || 0);
+      const gstPercent = Number(gst?.value || 0);
+      const gstAmount = (base * gstPercent) / 100;
+      const total = base + gstAmount;
       if (amount) amount.value = total ? total.toFixed(2) : '';
     };
     [qty, rate, gst].forEach((field) => field?.addEventListener('input', recalcAmount));
