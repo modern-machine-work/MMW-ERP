@@ -1,0 +1,41 @@
+<div class="page-header">
+  <div>
+    <h1>Employees</h1>
+    <p>Manage employee records, attendance, advances and salary.</p>
+  </div>
+</div>
+
+<div class="tabbar" data-tabbar>
+  <button class="tab-button active" type="button" data-tab-target="employees">Employees</button>
+  <button class="tab-button" type="button" data-tab-target="attendance">Attendance</button>
+  <button class="tab-button" type="button" data-tab-target="advances">Advances</button>
+  <button class="tab-button" type="button" data-tab-target="salaryRegister">Salary</button>
+</div>
+
+<section class="group-section" data-tab-panel="employees" data-crud-page="employees">
+  <div class="page-header"><div><h1>Employees</h1><p>Employee salary and department records.</p></div><button class="btn primary" type="button" data-add-record>Add Employee</button></div>
+  <div class="toolbar"><input class="search-input" data-search placeholder="Search employees"></div>
+  <div class="table-wrap"><table><thead data-table-head></thead><tbody data-table-body></tbody></table></div>
+  <div data-modal-root></div>
+</section>
+
+<section class="group-section hidden" data-tab-panel="attendance" data-crud-page="attendance">
+  <div class="page-header"><div><h1>Attendance</h1><p>Daily employee time records.</p></div><button class="btn primary" type="button" data-add-record>Add Attendance</button></div>
+  <div class="toolbar"><input class="search-input" data-search placeholder="Search attendance"></div>
+  <div class="table-wrap"><table><thead data-table-head></thead><tbody data-table-body></tbody></table></div>
+  <div data-modal-root></div>
+</section>
+
+<section class="group-section hidden" data-tab-panel="advances" data-crud-page="advances">
+  <div class="page-header"><div><h1>Advances</h1><p>Employee advance payments.</p></div><button class="btn primary" type="button" data-add-record>Add Advance</button></div>
+  <div class="toolbar"><input class="search-input" data-search placeholder="Search advances"></div>
+  <div class="table-wrap"><table><thead data-table-head></thead><tbody data-table-body></tbody></table></div>
+  <div data-modal-root></div>
+</section>
+
+<section class="group-section hidden" data-tab-panel="salaryRegister" data-crud-page="salaryRegister">
+  <div class="page-header"><div><h1>Salary</h1><p>Monthly salary payable and payment status.</p></div><button class="btn primary" type="button" data-add-record>Add Salary Entry</button></div>
+  <div class="toolbar"><input class="search-input" data-search placeholder="Search salary register"></div>
+  <div class="table-wrap"><table><thead data-table-head></thead><tbody data-table-body></tbody></table></div>
+  <div data-modal-root></div>
+</section>
