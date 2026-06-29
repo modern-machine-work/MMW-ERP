@@ -6,8 +6,8 @@ async function initVendorPaymentsPage() {
     idField: 'PaymentID',
     idPrefix: 'VP',
     showView: true,
-    monthField: 'DueDate',
-    tableFields: ['DueDate', 'VendorID', 'AmountPaid', 'PaymentStatus'],
+    monthField: 'BillDate',
+    tableFields: ['BillDate', 'VendorID', 'AmountPaid', 'PaymentStatus'],
     fields: [
       { name: 'PaymentID', label: 'Payment ID', required: true, readonly: true },
       { name: 'VendorID', label: 'Vendor', required: true, lookup: { sheet: 'Vendors', valueField: 'VendorID', labelFields: ['VendorName'] }, displayFrom: { sheet: 'Vendors', valueField: 'VendorID', labelFields: ['VendorName'] } },
